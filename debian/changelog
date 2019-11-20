@@ -1,5 +1,6 @@
-rspamd (2.5) unstable; urgency=low
+rspamd (2.4-5-g8ca8743e3405) unstable; urgency=low
 
   * New release.
 
- -- Vsevolod Stakhov <vsevolod@highsecure.ru>  Fri, 16 Feb 2020 23:10:27 +0000
+ -- Wolfgang Walter <wolfgang.walter@stwm.de>  Wed, 28 Feb 2020 17:22:32 +0100
+
