@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 %:
-	dh $@ --with systemd
+	dh $@ --with systemd --parallel --parallel
 
 .PHONY: override_dh_strip
 
@@ -19,7 +19,7 @@ override_dh_auto_configure:
 		-DINCLUDEDIR=/usr/include \
 		-DSYSTEMDDIR=/lib/systemd/system \
 		-DCMAKE_BUILD_TYPE=ReleaseWithDebInfo \
-		-DDEBIAN_BUILD=1 \
+		-DDEBIAN_BUILD=1 -DGIT_ID=8ca8743e3 -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DGIT_ID=8ca8743e3 -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
 		-DINSTALL_EXAMPLES=ON \
 		-DENABLE_JEMALLOC=ON \
 		-DENABLE_GD=OFF \
@@ -27,7 +27,7 @@ override_dh_auto_configure:
 		-DENABLE_LUAJIT=ON \
 		-DENABLE_TORCH=ON \
 		-DENABLE_LIBUNWIND=ON \
-		-DWANT_SYSTEMD_UNITS=ON
+		-DWANT_SYSTEMD_UNITS=ON -DENABLE_HYPERSCAN=ON -DENABLE_FANN=OFF -DENABLE_HYPERSCAN=ON -DENABLE_FANN=OFF
 
 override_dh_makeshlibs:
 	dh_makeshlibs -Xrspamd-actrie
