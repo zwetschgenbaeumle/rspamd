@@ -174,6 +174,7 @@ struct rspamd_task {
 	gchar *helo;                                    /**< helo header value								*/
 	gchar *queue_id;                                /**< queue id if specified							*/
 	rspamd_inet_addr_t *from_addr;                    /**< from addr for a task							*/
+	rspamd_inet_addr_t *spf_from_addr;                    /**< from addr for a task	used for spf validation						*/
 	rspamd_inet_addr_t *client_addr;                /**< address of connected socket					*/
 	gchar *deliver_to;                                /**< address to deliver								*/
 	gchar *user;                                    /**< user to deliver								*/

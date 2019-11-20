@@ -231,6 +231,10 @@ rspamd_task_free (struct rspamd_task *task)
 			rspamd_inet_address_free (task->from_addr);
 		}
 
+		if (task->spf_from_addr) {
+			rspamd_inet_address_free (task->spf_from_addr);
+		}
+
 		if (task->err) {
 			g_error_free (task->err);
 		}

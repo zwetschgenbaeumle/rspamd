@@ -415,6 +415,36 @@ spf_module_reconfig (struct rspamd_config *cfg)
 	return spf_module_config (cfg);
 }
 
+static rspamd_inet_addr_t *
+spf_get_spf_from_addr (struct rspamd_task *task)
+{
+	gconstpointer spf_from_addr_val;
+
+
+	if (task->spf_from_addr) {
+		return task->spf_from_addr;
+	}
+
+	spf_from_addr_val = rspamd_mempool_get_variable (task->task_pool,
+			RSPAMD_MEMPOOL_SPF_FROM_ADDR);
+
+	if (spf_from_addr_val) {
+		task->spf_from_addr = rspamd_inet_address_new(0, NULL);
+		if (!task->spf_from_addr || !rspamd_parse_inet_address_ip(
+				spf_from_addr_val,
+				strlen(spf_from_addr_val),
+				task->spf_from_addr)) {
+			rspamd_inet_address_free(task->spf_from_addr);
+			task->spf_from_addr = NULL;
+		}
+	}
+	if (!task->spf_from_addr) {
+		task->spf_from_addr = rspamd_inet_address_copy(task->from_addr);
+	}
+
+	return task->spf_from_addr ? task->spf_from_addr : task->from_addr;
+}
+
 static gboolean
 spf_check_element (struct spf_resolved *rec, struct spf_addr *addr,
 		struct rspamd_task *task, gboolean cached)
@@ -425,8 +455,9 @@ spf_check_element (struct spf_resolved *rec, struct spf_addr *addr,
 	guint af, mask, bmask, addrlen;
 	const gchar *spf_message, *spf_symbol;
 	struct spf_ctx *spf_module_ctx = spf_get_context (task->cfg);
+	rspamd_inet_addr_t *spf_from_addr = spf_get_spf_from_addr(task);
 
-	if (task->from_addr == NULL) {
+	if (spf_from_addr == NULL) {
 		return FALSE;
 	}
 
@@ -435,11 +466,11 @@ spf_check_element (struct spf_resolved *rec, struct spf_addr *addr,
 		return FALSE;
 	}
 
-	af = rspamd_inet_address_get_af (task->from_addr);
+	af = rspamd_inet_address_get_af (spf_from_addr);
 	/* Basic comparing algorithm */
 	if (((addr->flags & RSPAMD_SPF_FLAG_IPV6) && af == AF_INET6) ||
 		((addr->flags & RSPAMD_SPF_FLAG_IPV4) && af == AF_INET)) {
-		d = rspamd_inet_address_get_hash_key (task->from_addr, &addrlen);
+		d = rspamd_inet_address_get_hash_key (spf_from_addr, &addrlen);
 
 		if (af == AF_INET6) {
 			s = (const guint8 *)addr->addr6;
@@ -660,6 +691,7 @@ spf_symbol_callback (struct rspamd_task *task,
 	struct spf_resolved *l;
 	gint *dmarc_checks;
 	struct spf_ctx *spf_module_ctx = spf_get_context (task->cfg);
+	rspamd_inet_addr_t *spf_from_addr;
 
 	/* Allow dmarc */
 	dmarc_checks = rspamd_mempool_get_variable (task->task_pool,
@@ -677,15 +709,17 @@ spf_symbol_callback (struct rspamd_task *task,
 				dmarc_checks, NULL);
 	}
 
+	spf_from_addr = spf_get_spf_from_addr(task);
+
 	if (rspamd_match_radix_map_addr (spf_module_ctx->whitelist_ip,
-			task->from_addr) != NULL) {
+			spf_from_addr) != NULL) {
 		rspamd_symcache_finalize_item (task, item);
 		return;
 	}
 
 	if ((!spf_module_ctx->check_authed && task->user != NULL)
 			|| (!spf_module_ctx->check_local &&
-					rspamd_inet_address_is_local (task->from_addr, TRUE))) {
+					rspamd_inet_address_is_local (spf_from_addr, TRUE))) {
 		msg_info_task ("skip SPF checks for local networks and authorized users");
 		rspamd_symcache_finalize_item (task, item);
 
