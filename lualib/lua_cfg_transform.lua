@@ -393,8 +393,8 @@ return function(cfg)
     actions_set['grow_factor'] = true
     actions_set['subject'] = true
 
-    for k,_ in pairs(cfg.actions) do
-      if not actions_set[k] then
+    for k,v in pairs(cfg.actions) do
+      if not actions_set[k] and type(v) ~= 'table' then
         logger.warnx('unknown element in actions section: %s', k)
       end
     end
