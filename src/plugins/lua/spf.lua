@@ -79,7 +79,7 @@ else
   local_config = default_config
 end
 
-local function spf_check_callback(task)
+local function spf_get_from_ip(task)
 
   local ip
 
@@ -105,14 +105,28 @@ local function spf_check_callback(task)
         break
       end
     end
-    if not found then
+    if found then
+      return ip
+    else
       rspamd_logger.warnx(task, "cannot find external relay with IP %s",
           local_config.external_relay)
+    end
+  end
+  local mp = task:get_mempool()
+  if mp:has_variable('spf_from_addr') then
+    ip = mp:get_variable('spf_from_addr');
+    if ip == '' then
       ip = task:get_from_ip()
     end
   else
     ip = task:get_from_ip()
   end
+  return ip
+end
+
+local function spf_check_callback(task)
+
+  local ip = spf_get_from_ip(task)
 
   local function flag_to_symbol(fl)
     if bit.band(fl, rspamd_spf.flags.temp_fail) ~= 0 then
