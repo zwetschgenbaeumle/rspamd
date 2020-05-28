@@ -1,3 +1,9 @@
+rspamd (2.6-1-g8ca8743e3405) unstable; urgency=low
+
+  * New release.
+
+ -- Wolfgang Walter <wolfgang.walter@stwm.de>  Wed, 28 May 2020 17:22:32 +0100
+
 rspamd (2.5-1-g8ca8743e3405) unstable; urgency=low
 
   * New release.
